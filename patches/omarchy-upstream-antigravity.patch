@@ -1,0 +1,47 @@
+diff --git a/bin/omarchy-default-agent b/bin/omarchy-default-agent
+index e391a0b..4482c91 100755
+--- a/bin/omarchy-default-agent
++++ b/bin/omarchy-default-agent
+@@ -2,7 +2,7 @@
+ 
+ # omarchy:summary=Set and launch the default coding agent
+-# omarchy:args=[pi|omp|opencode|claude|codex|grok|gemini|openclaw|hermes|copilot|crush|cursor-agent|muse]
++# omarchy:args=[pi|omp|opencode|claude|codex|grok|agy|openclaw|hermes|copilot|crush|cursor-agent|muse]
+ # omarchy:examples=omarchy default agent | omarchy default agent codex | omarchy default agent claude
+ 
+ installing=false
+@@ -31,7 +31,8 @@ case "$1" in
+ codex) agent="codex"; name="Codex" ;;
+ crush) agent="crush"; name="Crush" ;;
+ grok) agent="grok"; name="Grok"; agent_package="npm:@xai-official/grok" ;;
+-gemini | gemini-cli) agent="gemini"; name="Gemini" ;;
++agy | antigravity) agent="agy"; name="Antigravity" ;;
++gemini | gemini-cli) agent="agy"; name="Antigravity" ;; # Legacy alias for deprecated Gemini CLI
+ openclaw) agent="openclaw"; name="OpenClaw"; agent_installer="omarchy-install-openclaw-cli" ;;
+ hermes) agent="hermes"; name="Hermes"; agent_installer="omarchy-install-hermes-cli" ;;
+ copilot | github-copilot) agent="copilot"; name="GitHub Copilot" ;;
+@@ -42,7 +43,7 @@ muse | muse-code | musecode)
+   ;;
+ cursor | cursor-agent) agent="cursor-agent"; name="Cursor CLI" ;;
+ *)
+-  echo "Usage: omarchy-default-agent <pi|omp|opencode|claude|codex|grok|gemini|openclaw|hermes|copilot|crush|cursor-agent|muse>"
++  echo "Usage: omarchy-default-agent <pi|omp|opencode|claude|codex|grok|agy|openclaw|hermes|copilot|crush|cursor-agent|muse>"
+   exit 1
+   ;;
+ esac
+diff --git a/bin/omarchy-agent b/bin/omarchy-agent
+index 4b9ad51..786e241 100755
+--- a/bin/omarchy-agent
++++ b/bin/omarchy-agent
+@@ -58,9 +58,9 @@ case "$agent" in
+ opencode)
+   command=(opencode --auto)
+   [[ -n ${prompt:-} ]] && command+=(--prompt "$prompt")
+   ;;
+-gemini)
+-  command=(gemini --yolo)
++agy|antigravity|gemini)
++  command=(agy --dangerously-skip-permissions --mode accept-edits)
+   [[ -n ${prompt:-} ]] && command+=(--prompt-interactive "$prompt")
+   ;;
+ copilot)

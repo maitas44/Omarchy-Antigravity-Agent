@@ -1,0 +1,64 @@
+#!/bin/bash
+export PATH="$HOME/.local/bin:$PATH"
+
+# omarchy:summary=Launch the default coding agent in a terminal
+# omarchy:args=[--inline] [--pick]
+# omarchy:examples=omarchy agent | omarchy agent --inline
+
+inline=false
+pick=false
+
+orig_args=("$@")
+while (($#)); do
+  case "$1" in
+    --inline)
+      inline=true
+      shift
+      ;;
+    --pick)
+      pick=true
+      shift
+      ;;
+    --prompt)
+      prompt=${2:?--prompt needs a value}
+      shift 2
+      ;;
+    *)
+      echo "Unexpected argument: $1" >&2
+      echo "To pass a prompt: omarchy agent prompt \"$*\"" >&2
+      exit 1
+      ;;
+  esac
+done
+
+agent=$(omarchy-default-agent)
+
+if [[ -z $agent ]]; then
+  [[ $pick == "true" ]] && exec omarchy-menu summon setup.default.agent
+  echo "Choose default agent with: omarchy default agent <name>" >&2
+  exit 1
+fi
+
+if [[ "$agent" == "agy" || "$agent" == "antigravity" ]]; then
+  if ! command -v agy &>/dev/null; then
+    echo "agy is not installed. Choose an installed agent with: omarchy default agent <name>" >&2
+    exit 1
+  fi
+
+  # Agents refuse to remember trust for $HOME, so launches from keybinding or
+  # menu start in Work directory if present instead of re-asking on every session.
+  [[ $PWD == "$HOME" && -d $HOME/Work ]] && cd "$HOME/Work"
+
+  command=(agy --dangerously-skip-permissions --mode accept-edits)
+  [[ -n ${prompt:-} ]] && command+=(--prompt-interactive "$prompt")
+
+  if [[ $inline == "true" ]]; then
+    exec "${command[@]}"
+  else
+    # Fixed app-id so window rules and themes match
+    exec omarchy-launch-tui --app-id=org.omarchy.agent "${command[@]}"
+  fi
+fi
+
+# For any other agent, delegate to system omarchy-agent
+exec /usr/bin/omarchy-agent "${orig_args[@]}"
